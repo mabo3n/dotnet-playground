@@ -6,4 +6,8 @@
     <RootNamespace>DotNetPloayground</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.2.0" />
+  </ItemGroup>
+
 </Project>
