@@ -6,6 +6,15 @@ using System.Collections;
 
 namespace DotNetPlayground
 {
+    public interface IDataSource
+    {
+        (int start, int end) XRange { get; }
+        (int start, int end) YRange { get; }
+        object GetValue(int x, int y);
+        IEnumerable<object> GetXValues(int y);
+        IEnumerable<object> GetYValues(int x);
+    }
+
     public abstract class BaseIterator<T> : IEnumerator<T>
     {
         private int currentIndex = -1;
@@ -40,17 +49,24 @@ namespace DotNetPlayground
         }
     }
 
-    public class SingleValueIterator<T> : BaseIterator<T>
+    public class LineIterator : BaseIterator<IEnumerable<object>>
     {
-        private T[] values; // sheet
-        public override T GetCurrent(int index)
+        private readonly IDataSource source;
+
+        public LineIterator(IDataSource source)
         {
-            return values[index];
+            this.source = source;
+        }
+
+        public override IEnumerable<object> GetCurrent(int index)
+        {
+            return source.GetXValues(index);
         }
 
         public override bool HasNext(int index)
         {
-            return index < values.Length - 1;
+            return index >= source.XRange.start
+                && index <= source.XRange.end;
         }
     }
 
@@ -75,8 +91,8 @@ namespace DotNetPlayground
         
         static void Main(string[] args)
         {
-            var columnIterator = new SingleValueIterator<object>();
-            var lineIterator = new CompoundIterator<object>();
+            //var columnIterator = new SingleValueIterator<object>();
+            //var lineIterator = new CompoundIterator<object>();
         }
     }
 }
