@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.OleDb;
 
 namespace DotNetPlayground
 {
@@ -13,82 +11,44 @@ namespace DotNetPlayground
         }
     }
 
-    public class Document { }
+    public interface IGridDataSource
+    {
+        object GetAt(int x, int y);
+    }
 
-    public interface ConvertibleToEntity<TEntity>
+    public interface IImportableItem { }
+    public class InternalDocumentItem : IImportableItem { }
+
+    public interface ImportableItemRepository<T> where T : IImportableItem
     { 
-        TEntity Convert();
+        IEnumerable<T> Get(Func<T, bool> predicate = null);
     }
-
-    public class DocumentRepresentation : ConvertibleToEntity<Document>
+    public class InternalDocumentItemRepository : ImportableItemRepository<InternalDocumentItem>
     {
-        public Document Convert()
+        public IEnumerable<InternalDocumentItem> Get(
+            Func<InternalDocumentItem, bool> predicate = null)
         {
-            return new Document();
+            throw new NotImplementedException();
         }
     }
 
-    public abstract class SheetContext : DbContext
+    public static class ImportJobDelegates
     {
-        public abstract object GetAt(int x, int y);
-        public abstract void SetAt(int x, int y);
+        public delegate void ImportJobEvent(object source, EventArgs args);
+        public delegate void ImportItemEvent(object source, EventArgs args);
     }
 
-    public class FileSheetContext : SheetContext
+    public abstract class ImportJobFacade
     {
-        private readonly string filePath;
+        public event ImportJobDelegates.ImportJobEvent OnJobStarted;
+        public event ImportJobDelegates.ImportItemEvent OnItemProcessed;
+        public event ImportJobDelegates.ImportJobEvent OnJobEnded;
 
-        public FileSheetContext(string filePath)
-        {
-            this.filePath = filePath;
-        }
-
-        public override object GetAt(int x, int y)
-        {
-            return 1;
-        }
-
-        public override void SetAt(int x, int y)
-        {
-            
-        }
-    }
-
-    public abstract class SheetRepository
-    {      
-        private readonly SheetContext context;
-
-        public SheetRepository(SheetContext context)
-        {
-            this.context = context;
-        }
-
-        
-    }
-    public class DocRepository : SheetRepository
-    { 
-        public DocRepository(SheetContext context) : base(context) { }
-    }
-
-
-    public class MigrationDelegates
-    {
-        public delegate void MigrationEvent(object source, EventArgs args);
-        public delegate void MigrationItemEvent(object source, EventArgs args);
-    }
-
-    public abstract class MigrationFacade
-    {
-        public event MigrationDelegates.MigrationEvent OnMigrationStarted;
-        public event MigrationDelegates.MigrationItemEvent OnItemProcessed;
-        public event MigrationDelegates.MigrationEvent OnMigrationEnded;
-
-        Repository source;
-        Repository target;
+        InternalDocumentItemRepository source;
 
         public virtual void Start()
         {
-            OnMigrationStarted(this, null);
+            OnJobStarted(this, null);
             ValidateSource();
             ValidateTarget();
             
@@ -98,13 +58,13 @@ namespace DotNetPlayground
                 MigrateItem(item);
                 OnItemProcessed(item, null);
             }
-            OnMigrationEnded(this, null); 
+            OnJobEnded(this, null); 
         }
 
         protected abstract void ValidateSource();
         protected abstract void ValidateTarget();
         
-        protected abstract bool ValidateItem(ImportableItem item);
-        protected abstract bool MigrateItem(ImportableItem item);
+        protected abstract bool ValidateItem(IImportableItem item);
+        protected abstract bool MigrateItem(IImportableItem item);
     }
 }
