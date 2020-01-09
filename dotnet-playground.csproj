@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>DotNetPloayground</RootNamespace>
+    <RootNamespace>DotNetPlayground</RootNamespace>
   </PropertyGroup>
 
 </Project>
