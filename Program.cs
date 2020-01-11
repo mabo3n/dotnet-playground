@@ -11,8 +11,8 @@ namespace DotNetPlayground
         (int start, int end) XRange { get; }
         (int start, int end) YRange { get; }
         object GetValue(int x, int y);
-        IEnumerable<object> GetXValues(int y);
-        IEnumerable<object> GetYValues(int x);
+        // IEnumerable<object> GetXValues(int y);
+        // IEnumerable<object> GetYValues(int x);
     }
 
     public abstract class BaseIterator<T> : IEnumerator<T>
@@ -31,7 +31,7 @@ namespace DotNetPlayground
                 currentItem = GetCurrent(currentIndex);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -42,14 +42,31 @@ namespace DotNetPlayground
         {
             currentIndex = -1;
         }
-        
+
         public virtual void Dispose()
         {
             Reset();
+
+            int a = 3;
+            string jasisdjaoisjda = @"asasasdas
+              asdasasdsadsdadasasdasddas
+
+              assa
+              adsdas
+              adsadsasad";
+            a.ToString();
+            a.GetType();                  
+            Dispose();   
+
+
         }
     }
 
-    public class LineIterator : BaseIterator<IEnumerable<object>>
+    public abstract class CompoundIterator<T> : BaseIterator<T> where T : BaseIterator
+    {
+
+    }
+    public class LineIterator<T> : BaseIterator<T>
     {
         private readonly IDataSource source;
 
@@ -58,7 +75,7 @@ namespace DotNetPlayground
             this.source = source;
         }
 
-        public override IEnumerable<object> GetCurrent(int index)
+        public override T GetCurrent(int index)
         {
             return source.GetXValues(index);
         }
@@ -70,25 +87,25 @@ namespace DotNetPlayground
         }
     }
 
-    public class CompoundIterator<T> : BaseIterator<BaseIterator<T>>
-    {
-        // private BaseIterator<BaseIterator<T>> childIterators;
-        private BaseIterator<T>[] childIterators;
+    // public class CompoundIterator<T> : BaseIterator<BaseIterator<T>>
+    // {
+    //     // private BaseIterator<BaseIterator<T>> childIterators;
+    //     private BaseIterator<T>[] childIterators;
 
-        public override BaseIterator<T> GetCurrent(int index)
-        {
-            return childIterators[index];
-        }
+    //     public override BaseIterator<T> GetCurrent(int index)
+    //     {
+    //         return childIterators[index];
+    //     }
 
-        public override bool HasNext(int index)
-        {
-            return index < childIterators.Length - 1;
-        }
-    }
+    //     public override bool HasNext(int index)
+    //     {
+    //         return index < childIterators.Length - 1;
+    //     }
+    // }
 
     class Program
     {
-        
+
         static void Main(string[] args)
         {
             //var columnIterator = new SingleValueIterator<object>();
